@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode and Median - Grade 5 Cambridge Mathematics</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for child-friendly typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <!-- SortableJS for Drag and Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Fredoka', 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 50%, #fef3c7 100%);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .slide {
+            display: none;
+            min-height: 100vh;
+            width: 100vw;
+            padding: 6rem 2rem 5rem 2rem;
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .interactive-card {
+            transition: all 0.25s ease;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+        }
+
+        .interactive-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-btn {
+            position: fixed;
+            bottom: 1.5rem;
+            padding: 0.85rem 1.75rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.08);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .prev-btn { left: 2rem; background-color: #ff6b6b; color: white; }
+        .next-btn { right: 2rem; background-color: #10b981; color: white; }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 10px;
+            background: linear-gradient(90deg, #3b82f6, #ec4899, #10b981);
+            transition: width 0.3s ease;
+            z-index: 60;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Header Logo Styling (Matching Template) */
+        .logos-header {
+            position: absolute;
+            top: 0.75rem;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+            pointer-events: auto;
+            min-height: 85px;
+            z-index: 40;
+        }
+        
+        .logo-container {
+            cursor: pointer;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            transition: transform 0.2s;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 6px 16px;
+            border-radius: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .logo-container:hover {
+            transform: scale(1.04);
+        }
+
+        .logo-container:hover::after {
+            content: 'Click to Change';
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+        
+        .logo-img {
+            height: 55px;
+            max-width: 220px;
+            object-fit: contain;
+        }
+
+        /* Number Block & Game Elements */
+        .num-block {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+            margin: 4px;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+            transition: all 0.25s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .num-block:hover {
+            transform: translateY(-4px) rotate(3deg);
+        }
+
+        .crossed-out {
+            opacity: 0.35;
+            text-decoration: line-through;
+            transform: scale(0.85);
+            filter: grayscale(80%);
+            border: 2px solid #ef4444 !important;
+        }
+
+        .median-highlight {
+            transform: scale(1.25) !important;
+            box-shadow: 0 0 20px #f59e0b !important;
+            border: 3px solid #f59e0b !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        .book-page-container {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border: 4px solid #bae6fd;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .book-header-banner {
+            background: linear-gradient(90deg, #0284c7, #0d9488);
+            color: white;
+            padding: 10px 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            top: 5rem;
+            right: 2rem;
+            background: #1e293b;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 200;
+            display: none;
+            animation: fadeIn 0.3s forwards;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Progress Bar -->
+    <div id="progress" class="progress-bar" style="width: 12.5%;"></div>
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Motivation Overlay -->
+    <div id="motivation-overlay" class="fixed inset-0 z-[150] hidden items-center justify-center bg-sky-900/40 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+        <div id="motivation-card" class="bg-gradient-to-br from-rose-400 via-fuchsia-500 to-indigo-500 p-10 rounded-[2.5rem] shadow-2xl border-8 border-white text-center transform scale-50 transition-all duration-500 max-w-2xl w-11/12 relative">
+            <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-yellow-400 w-24 h-24 rounded-full flex items-center justify-center border-4 border-white shadow-lg animate-bounce">
+                <i class="fa-solid fa-star text-5xl text-white"></i>
+            </div>
+            <h2 class="text-5xl md:text-6xl font-extrabold text-white mt-8 mb-4 drop-shadow-md leading-tight">
+                Don't be shy <br><span class="text-yellow-300 text-6xl md:text-7xl">to try!</span>
+            </h2>
+            <p class="text-xl md:text-2xl text-white font-bold mb-8 opacity-90">
+                Mistakes just mean you are learning. You're ready to be a Math Detective! 🕵️‍♀️
+            </p>
+            <button onclick="proceedToPractice()" class="bg-white hover:bg-gray-100 text-indigo-600 font-extrabold text-2xl px-12 py-4 rounded-full shadow-xl transition transform hover:scale-105 active:scale-95">
+                I'm Ready! <i class="fa-solid fa-rocket ml-2 text-rose-500"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden file inputs for uploading custom logos -->
+    <input type="file" id="leftLogoInput" class="hidden" accept="image/*" onchange="handleLogoUpload(event, 'left')">
+    <input type="file" id="rightLogoInput" class="hidden" accept="image/*" onchange="handleLogoUpload(event, 'right')">
+
+    <!-- Header with School Logos Template -->
+    <div class="logos-header">
+        <div class="logo-container" onclick="document.getElementById('leftLogoInput').click()" title="Click to replace left logo">
+            <div id="logo-left-default" class="flex items-center gap-2">
+                <i class="fa-solid fa-graduation-cap text-3xl text-sky-600"></i>
+                <div>
+                    <div class="text-xs font-bold text-sky-800 uppercase tracking-wider">Cambridge International</div>
+                    <div class="text-sm font-bold text-gray-700">Primary Curriculum</div>
+                </div>
+            </div>
+            <img id="logo-left-img" class="logo-img hidden" src="" alt="Left Logo">
+        </div>
+
+        <div class="text-center hidden md:block">
+            <span class="bg-amber-100 text-amber-800 text-xs font-extrabold px-3 py-1 rounded-full border border-amber-300">
+                <i class="fa-solid fa-star text-amber-500 mr-1"></i> Grade 5 Mathematics
+            </span>
+        </div>
+
+        <div class="logo-container" onclick="document.getElementById('rightLogoInput').click()" title="Click to replace right logo">
+            <div id="logo-right-default" class="flex items-center gap-2">
+                <i class="fa-solid fa-school text-3xl text-emerald-600"></i>
+                <div>
+                    <div class="text-xs font-bold text-emerald-800 uppercase tracking-wider">Eastlands International</div>
+                    <div class="text-sm font-bold text-gray-700">School</div>
+                </div>
+            </div>
+            <img id="logo-right-img" class="logo-img hidden" src="" alt="Right Logo">
+        </div>
+    </div>
+
+    <!-- SLIDE 1: Title Slide -->
+    <div class="slide active" id="slide-1">
+        <div class="max-w-4xl text-center">
+            <div class="inline-block bg-sky-100 text-sky-700 font-bold px-6 py-2 rounded-full mb-4 border-2 border-sky-300 text-lg shadow-sm">
+                <i class="fa-solid fa-chart-line mr-2"></i> Cambridge Primary Mathematics - Unit 4
+            </div>
+            <h1 class="text-5xl md:text-6xl font-extrabold text-sky-900 mb-4 leading-tight drop-shadow-sm">
+                Averages: <span class="text-amber-500">Mode</span> & <span class="text-emerald-500">Median</span>
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto font-medium">
+                Discover how to summarize data, find popular choices, and locate the exact middle like a math detective!
+            </p>
+
+            <div class="bg-white/90 backdrop-blur-md p-6 rounded-3xl border-4 border-amber-200 inline-block shadow-xl mb-8">
+                <div class="flex items-center justify-center gap-4">
+                    <div class="w-16 h-16 bg-amber-400 text-white rounded-2xl flex items-center justify-center text-3xl shadow-md">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-widest block">Created By</span>
+                        <span class="text-2xl font-bold text-gray-800">Eng / Hla Elsafty</span>
+                        <span class="text-sm text-gray-500 block">Mathematics Specialist</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <button onclick="changeSlide(1)" class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-2xl px-10 py-4 rounded-full shadow-lg hover:shadow-2xl transition transform hover:scale-105 active:scale-95 flex items-center gap-3 mx-auto">
+                    <span>Start Learning Adventure!</span>
+                    <i class="fa-solid fa-rocket animate-bounce"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: Getting Started (Warmup) -->
+    <div class="slide" id="slide-2">
+        <div class="max-w-5xl w-full">
+            <div class="text-center mb-6">
+                <span class="bg-purple-100 text-purple-700 text-sm font-bold px-4 py-1.5 rounded-full border border-purple-300">
+                    <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> Warm-Up Challenge
+                </span>
+                <h2 class="text-3xl font-bold text-gray-800 mt-2">Getting Started from Cambridge Learner's Book</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Pencil in the Middle -->
+                <div class="bg-white p-6 rounded-3xl border-4 border-sky-200 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-xl text-sky-800">1. Which pencil is in the middle?</h3>
+                            <span class="bg-sky-100 text-sky-700 text-xs font-bold px-2.5 py-1 rounded-lg">Click to select</span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4">Click on the pencil that sits right in the middle of the set!</p>
+
+                        <div id="pencil-container" class="flex items-end justify-center gap-3 bg-sky-50 p-6 rounded-2xl min-h-[140px]">
+                            <button onclick="checkPencil(1)" id="pencil-1" class="pencil-btn hover:scale-110 transition p-2 rounded-xl border-2 border-transparent hover:border-sky-400">
+                                <i class="fa-solid fa-pencil text-4xl text-red-500 transform -rotate-45"></i>
+                                <span class="block text-xs font-bold text-gray-500 mt-1">#1</span>
+                            </button>
+                            <button onclick="checkPencil(2)" id="pencil-2" class="pencil-btn hover:scale-110 transition p-2 rounded-xl border-2 border-transparent hover:border-sky-400">
+                                <i class="fa-solid fa-pencil text-5xl text-amber-500 transform -rotate-45"></i>
+                                <span class="block text-xs font-bold text-gray-500 mt-1">#2</span>
+                            </button>
+                            <button onclick="checkPencil(3)" id="pencil-3" class="pencil-btn hover:scale-110 transition p-2 rounded-xl border-2 border-transparent hover:border-sky-400">
+                                <i class="fa-solid fa-pencil text-4xl text-emerald-500 transform -rotate-45"></i>
+                                <span class="block text-xs font-bold text-gray-500 mt-1">#3</span>
+                            </button>
+                            <button onclick="checkPencil(4)" id="pencil-4" class="pencil-btn hover:scale-110 transition p-2 rounded-xl border-2 border-transparent hover:border-sky-400">
+                                <i class="fa-solid fa-pencil text-5xl text-blue-500 transform -rotate-45"></i>
+                                <span class="block text-xs font-bold text-gray-500 mt-1">#4</span>
+                            </button>
+                            <button onclick="checkPencil(5)" id="pencil-5" class="pencil-btn hover:scale-110 transition p-2 rounded-xl border-2 border-transparent hover:border-sky-400">
+                                <i class="fa-solid fa-pencil text-4xl text-purple-500 transform -rotate-45"></i>
+                                <span class="block text-xs font-bold text-gray-500 mt-1">#5</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="pencil-feedback" class="mt-3 text-center font-bold text-sm min-h-[24px]"></div>
+                </div>
+
+                <!-- Number Ordering Game -->
+                <div class="bg-white p-6 rounded-3xl border-4 border-emerald-200 shadow-lg flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold text-xl text-emerald-800">2. Order Numbers: Smallest to Greatest</h3>
+                            <button onclick="resetSortGame()" class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-lg hover:bg-emerald-200">Reset</button>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4">Click the numbers in order from smallest to greatest:</p>
+
+                        <div class="bg-emerald-50 p-4 rounded-2xl mb-3 min-h-[60px] flex items-center justify-center flex-wrap gap-2" id="sorted-pool">
+                            <!-- Clicked items move here -->
+                        </div>
+
+                        <div class="flex items-center justify-center flex-wrap gap-2" id="unsorted-pool">
+                            <button onclick="pickSortNum(3, this)" class="num-block bg-rose-500">3</button>
+                            <button onclick="pickSortNum(7, this)" class="num-block bg-sky-500">7</button>
+                            <button onclick="pickSortNum(9, this)" class="num-block bg-amber-500">9</button>
+                            <button onclick="pickSortNum(4, this)" class="num-block bg-indigo-500">4</button>
+                            <button onclick="pickSortNum(1, this)" class="num-block bg-emerald-500">1</button>
+                            <button onclick="pickSortNum(5, this)" class="num-block bg-purple-500">5</button>
+                            <button onclick="pickSortNum(8, this)" class="num-block bg-teal-500">8</button>
+                        </div>
+                    </div>
+                    <div id="sort-feedback" class="mt-3 text-center font-bold text-sm min-h-[24px]"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: Understanding MODE -->
+    <div class="slide" id="slide-3">
+        <div class="max-w-5xl w-full">
+            <div class="text-center mb-6">
+                <span class="bg-amber-100 text-amber-800 text-sm font-bold px-4 py-1.5 rounded-full border border-amber-300">
+                    <i class="fa-solid fa-fire text-amber-600 mr-1"></i> Concept 1
+                </span>
+                <h2 class="text-4xl font-extrabold text-gray-800 mt-2">What is the <span class="text-amber-500">MODE</span>?</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-3xl border-4 border-amber-300 shadow-md text-center">
+                    <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Most Common</h3>
+                    <p class="text-gray-600 text-sm">The <strong>MODE</strong> is the number or item that appears the <strong>MOST OFTEN</strong> in a data set!</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl border-4 border-sky-300 shadow-md text-center">
+                    <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">
+                        <i class="fa-solid fa-cat"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Book Tip!</h3>
+                    <p class="text-gray-600 text-sm">Animals: <strong>cat, cat, mouse, rabbit</strong>.<br><br><span class="bg-sky-100 text-sky-800 font-bold px-3 py-1 rounded-full">Cat is the Mode!</span></p>
+                </div>
+
+                <div class="bg-white p-6 rounded-3xl border-4 border-emerald-300 shadow-md text-center">
+                    <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-3">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Memory Trick</h3>
+                    <p class="text-gray-600 text-sm"><strong class="text-amber-600">MO</strong>de = <strong class="text-amber-600">MO</strong>st Often!<br>Remember the first two letters!</p>
+                </div>
+            </div>
+
+            <!-- Interactive Mode Finder Exercise (Bananas from Exercise 4.1 Q2) -->
+            <div class="bg-white p-6 rounded-3xl border-4 border-amber-400 shadow-xl">
+                <h3 class="text-xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-basket-shopping text-amber-500 text-2xl"></i>
+                    Interactive Exercise: Bananas in a Bunch (Book Exercise 4.1 Q2)
+                </h3>
+                <p class="text-gray-600 text-sm mb-4">Click each bunch count below to build our live frequency counter!</p>
+
+                <!-- Data items -->
+                <div class="flex flex-wrap gap-2 mb-6 justify-center bg-amber-50 p-4 rounded-2xl border border-amber-200" id="banana-items">
+                    <button onclick="clickBanana(this, 6)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">6</button>
+                    <button onclick="clickBanana(this, 4)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">4</button>
+                    <button onclick="clickBanana(this, 5)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">5</button>
+                    <button onclick="clickBanana(this, 6)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">6</button>
+                    <button onclick="clickBanana(this, 7)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">7</button>
+                    <button onclick="clickBanana(this, 4)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">4</button>
+                    <button onclick="clickBanana(this, 4)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">4</button>
+                    <button onclick="clickBanana(this, 5)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">5</button>
+                    <button onclick="clickBanana(this, 6)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">6</button>
+                    <button onclick="clickBanana(this, 5)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">5</button>
+                    <button onclick="clickBanana(this, 7)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">7</button>
+                    <button onclick="clickBanana(this, 5)" class="px-3 py-1 bg-amber-300 hover:bg-amber-400 text-amber-900 rounded-lg font-bold transition transform hover:scale-110 shadow-sm cursor-pointer">5</button>
+                </div>
+
+                <div class="grid grid-cols-4 gap-4 text-center">
+                    <div class="bg-slate-100 p-4 rounded-2xl border-2 border-slate-300 transition-colors" id="box-4">
+                        <span class="text-2xl font-extrabold text-slate-700">4 Bananas</span>
+                        <div id="count-4" class="text-3xl font-bold text-sky-600 my-1">0 times</div>
+                    </div>
+                    <div class="bg-slate-100 p-4 rounded-2xl border-2 border-slate-300 transition-colors relative" id="box-5">
+                        <span class="text-2xl font-extrabold text-slate-700">5 Bananas</span>
+                        <div id="count-5" class="text-3xl font-bold text-sky-600 my-1">0 times</div>
+                        <span id="winner-badge" class="hidden absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase shadow-md animate-bounce">Winner!</span>
+                    </div>
+                    <div class="bg-slate-100 p-4 rounded-2xl border-2 border-slate-300 transition-colors" id="box-6">
+                        <span class="text-2xl font-extrabold text-slate-700">6 Bananas</span>
+                        <div id="count-6" class="text-3xl font-bold text-sky-600 my-1">0 times</div>
+                    </div>
+                    <div class="bg-slate-100 p-4 rounded-2xl border-2 border-slate-300 transition-colors" id="box-7">
+                        <span class="text-2xl font-extrabold text-slate-700">7 Bananas</span>
+                        <div id="count-7" class="text-3xl font-bold text-sky-600 my-1">0 times</div>
+                    </div>
+                </div>
+
+                <div id="banana-final-banner" class="hidden mt-6 text-center bg-amber-500 text-white font-bold p-3 rounded-xl text-lg shadow-sm animate-slideIn">
+                    <i class="fa-solid fa-trophy mr-2"></i> The Mode of bananas in a bunch is 5!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: Understanding MEDIAN & Interactive Cross-out Tool -->
+    <div class="slide" id="slide-4">
+        <div class="max-w-5xl w-full">
+            <div class="text-center mb-4">
+                <span class="bg-emerald-100 text-emerald-800 text-sm font-bold px-4 py-1.5 rounded-full border border-emerald-300">
+                    <i class="fa-solid fa-bullseye text-emerald-600 mr-1"></i> Concept 2
+                </span>
+                <h2 class="text-4xl font-extrabold text-gray-800 mt-1">What is the <span class="text-emerald-600">MEDIAN</span>?</h2>
+                <p class="text-gray-600 text-base">The <strong>MEDIAN</strong> is the middle number when data is written in order!</p>
+            </div>
+
+            <!-- Interactive Worked Example 1 Tool from Cambridge Book -->
+            <div class="bg-white p-6 rounded-3xl border-4 border-emerald-300 shadow-xl">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-sm">W1</span>
+                        <h3 class="text-xl font-bold text-gray-800">Worked Example 1: Student Heights</h3>
+                    </div>
+                    <button onclick="resetMedianTool()" class="bg-emerald-100 text-emerald-700 font-bold px-3 py-1 rounded-lg text-sm hover:bg-emerald-200">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset Step-by-Step
+                    </button>
+                </div>
+
+                <p class="text-gray-600 text-sm mb-4">Original Heights: <span class="font-bold text-gray-800">133 cm, 137 cm, 134 cm, 131 cm, 132 cm</span></p>
+
+                <!-- Step controller -->
+                <div class="bg-emerald-50 p-6 rounded-2xl border-2 border-emerald-200 text-center mb-4">
+                    <div id="median-step-desc" class="text-lg font-bold text-emerald-900 mb-4">
+                        Step 1: Write the numbers in order from smallest to greatest.
+                    </div>
+
+                    <div id="median-numbers-container" class="flex justify-center items-center gap-3 flex-wrap min-h-[70px]">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="flex justify-center gap-4">
+                    <button id="median-next-step-btn" onclick="nextMedianStep()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-full text-lg shadow-md transition transform hover:scale-105">
+                        Perform Next Step <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+
+                <div id="median-result-box" class="mt-4 bg-amber-100 border-2 border-amber-400 p-3 rounded-xl text-center font-bold text-amber-900 text-lg hidden">
+                    🎉 The Median height is <span class="text-2xl font-extrabold text-amber-600">133 cm</span>!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: MOTIVATION SLIDE (Must appear BEFORE practice!) -->
+    <div class="slide" id="slide-5">
+        <div class="max-w-5xl w-full text-center">
+            <span class="bg-pink-100 text-pink-700 text-sm font-bold px-4 py-1.5 rounded-full border border-pink-300 inline-block mb-2">
+                <i class="fa-solid fa-heart-pulse text-pink-500 mr-1"></i> Real-Life Motivation
+            </span>
+            <h2 class="text-4xl font-extrabold text-gray-800 mb-2">Why Do We Need Averages in Real Life?</h2>
+            <p class="text-gray-600 text-lg mb-6 max-w-3xl mx-auto">
+                Averages help us solve everyday mysteries, make smart shopping choices, and understand what's popular!
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <!-- Case 1: Seed Packets from Book Page 2 -->
+                <div class="bg-white p-6 rounded-3xl border-4 border-emerald-300 shadow-xl interactive-card relative overflow-hidden">
+                    <span class="absolute top-4 right-4 bg-emerald-100 text-emerald-800 font-bold text-xs px-3 py-1 rounded-full">Book Mystery #1</span>
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-3">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">The Seed Height Mystery</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        Two seed packets list average heights: <strong>Packet A (1 m)</strong> and <strong>Packet B (2 m)</strong>. Look at the garden below! Which packet belongs to which flower?
+                    </p>
+
+                    <div class="bg-emerald-50 p-4 rounded-2xl flex justify-around items-end h-32 border border-emerald-200 mb-4">
+                        <div class="text-center">
+                            <div class="w-8 bg-sky-500 rounded-t-lg mx-auto" style="height: 40px;"></div>
+                            <span class="text-xs font-bold text-gray-700 mt-1 block">Dark Blue (1m)</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-8 bg-amber-400 rounded-t-lg mx-auto" style="height: 80px;"></div>
+                            <span class="text-xs font-bold text-gray-700 mt-1 block">Yellow (2m)</span>
+                        </div>
+                    </div>
+
+                    <button onclick="revealSeedAnswer()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl transition text-center shadow">
+                        <i class="fa-solid fa-key mr-1"></i> Reveal Mystery Answer
+                    </button>
+                    <div id="seed-answer" class="mt-2 text-xs font-bold text-emerald-800 bg-emerald-100 p-2 rounded-lg hidden">
+                        🌿 Dark Blue seeds = Packet with 1m average! Yellow seeds = Packet with 2m average!
+                    </div>
+                </div>
+
+                <!-- Case 2: Movie Reviews from Book Page 3 -->
+                <div class="bg-white p-6 rounded-3xl border-4 border-purple-300 shadow-xl interactive-card relative overflow-hidden">
+                    <span class="absolute top-4 right-4 bg-purple-100 text-purple-800 font-bold text-xs px-3 py-1 rounded-full">Book Mystery #2</span>
+                    <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-2xl mb-3">
+                        <i class="fa-solid fa-film"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">The Movie Review Score</h3>
+                    <p class="text-gray-600 text-sm mb-4">
+                        "The Fun Film" has an <strong>Average Score of 6 out of 10</strong>. Does this mean everyone gave it 6?
+                    </p>
+
+                    <div class="bg-purple-50 p-4 rounded-2xl border border-purple-200 mb-4 text-xs space-y-2 text-purple-900 font-medium">
+                        <div class="flex justify-between items-center">
+                            <span>Viewer 1: 1/10 (Hated it)</span>
+                            <span class="font-bold text-red-500">1/10</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Viewer 2: 10/10 (Loved it!)</span>
+                            <span class="font-bold text-emerald-500">10/10</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Viewer 3: 7/10 (Good)</span>
+                            <span class="font-bold text-blue-500">7/10</span>
+                        </div>
+                    </div>
+
+                    <button onclick="showMovieMotivation()" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2.5 rounded-xl transition text-center shadow">
+                        <i class="fa-solid fa-circle-question mr-1"></i> Would you watch this film?
+                    </button>
+                    <div id="movie-answer" class="mt-2 text-xs font-bold text-purple-800 bg-purple-100 p-2 rounded-lg hidden">
+                        🍿 Averages collect everyone's opinions into ONE helpful number so you can decide!
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-gradient-to-r from-amber-400 to-rose-400 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-award text-3xl"></i>
+                    <div class="text-left">
+                        <span class="font-bold text-lg block">Ready to Practice!</span>
+                        <span class="text-xs text-amber-100">You are now equipped with real-world detective skills. Let's solve Cambridge exercises!</span>
+                    </div>
+                </div>
+                <button onclick="showMotivationOverlay()" class="bg-white text-gray-800 font-bold px-5 py-2 rounded-xl hover:bg-amber-50 text-sm shadow">
+                    Go to Book Practice <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: Cambridge Book Interactive Practice (Exercise 4.1) -->
+    <div class="slide" id="slide-6">
+        <div class="max-w-5xl w-full">
+            <div class="book-page-container">
+                <div class="book-header-banner">
+                    <span><i class="fa-solid fa-book-open mr-2"></i> Cambridge Learner's Book - Exercise 4.1 Practice</span>
+                    <span class="text-xs bg-white/20 px-3 py-1 rounded-full">Pages 52 - 54</span>
+                </div>
+
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Q1: Mode Questions -->
+                        <div class="bg-sky-50 p-5 rounded-2xl border-2 border-sky-200">
+                            <h4 class="font-bold text-sky-900 text-lg mb-2">1. Find the Mode of these sets:</h4>
+                            
+                            <div class="space-y-3">
+                                <div class="bg-white p-3 rounded-xl border border-sky-300 flex justify-between items-center">
+                                    <span class="font-bold text-gray-700">a) 1, 1, 1, 2, 3</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" id="q1a-input" class="w-16 p-1 text-center border-2 border-gray-300 rounded-lg font-bold" placeholder="Mode">
+                                        <button onclick="checkQ1a()" class="bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-sky-600">Check</button>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white p-3 rounded-xl border border-sky-300 flex justify-between items-center">
+                                    <span class="font-bold text-gray-700">b) 30, 29, 31, 29, 32</span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" id="q1b-input" class="w-16 p-1 text-center border-2 border-gray-300 rounded-lg font-bold" placeholder="Mode">
+                                        <button onclick="checkQ1b()" class="bg-sky-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-sky-600">Check</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q4: Unordered Median -->
+                        <div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-200">
+                            <h4 class="font-bold text-emerald-900 text-lg mb-2">4. Find the Median (Order first!):</h4>
+
+                            <div class="space-y-3">
+                                <div class="bg-white p-4 rounded-xl border border-emerald-300">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="font-bold text-gray-700">a) Sort these numbers:</div>
+                                        <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-bold"><i class="fa-solid fa-hand-pointer mr-1"></i> Drag to reorder</span>
+                                    </div>
+                                    
+                                    <!-- Drag and Drop Area -->
+                                    <div id="q4-sortable-list" class="flex flex-wrap gap-2 mb-4 p-3 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 min-h-[60px] items-center">
+                                        <div data-val="3" class="w-12 h-12 bg-white border-2 border-emerald-400 rounded-lg shadow-sm flex items-center justify-center font-bold text-lg text-emerald-900 cursor-move hover:bg-emerald-50 transition-colors">3</div>
+                                        <div data-val="7" class="w-12 h-12 bg-white border-2 border-emerald-400 rounded-lg shadow-sm flex items-center justify-center font-bold text-lg text-emerald-900 cursor-move hover:bg-emerald-50 transition-colors">7</div>
+                                        <div data-val="1" class="w-12 h-12 bg-white border-2 border-emerald-400 rounded-lg shadow-sm flex items-center justify-center font-bold text-lg text-emerald-900 cursor-move hover:bg-emerald-50 transition-colors">1</div>
+                                        <div data-val="5" class="w-12 h-12 bg-white border-2 border-emerald-400 rounded-lg shadow-sm flex items-center justify-center font-bold text-lg text-emerald-900 cursor-move hover:bg-emerald-50 transition-colors">5</div>
+                                        <div data-val="9" class="w-12 h-12 bg-white border-2 border-emerald-400 rounded-lg shadow-sm flex items-center justify-center font-bold text-lg text-emerald-900 cursor-move hover:bg-emerald-50 transition-colors">9</div>
+                                    </div>
+
+                                    <div id="q4-sort-feedback" class="text-sm font-bold text-center mb-3 min-h-[20px]"></div>
+
+                                    <div id="q4-interaction-area" class="flex justify-between items-center opacity-50 pointer-events-none transition-opacity duration-300">
+                                        <span class="text-xs font-bold text-emerald-700">Now, what is the middle number?</span>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="q4a-input" class="w-16 p-1 text-center border-2 border-gray-300 rounded-lg font-bold" placeholder="Median">
+                                            <button onclick="checkQ4a()" class="bg-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-600">Check</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Q7: Real Life Problem - Glove Shopkeeper -->
+                        <div class="bg-amber-50 p-5 rounded-2xl border-2 border-amber-300 md:col-span-2">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="bg-amber-400 text-white text-xs font-bold px-2.5 py-1 rounded-full">Real Life Challenge</span>
+                                <h4 class="font-bold text-amber-900 text-lg">7. Glove Shop Owner Decision (Book Page 54)</h4>
+                            </div>
+                            <p class="text-gray-700 text-sm mb-3">
+                                Glove sizes sold in one day: <strong>1, 2, 3, 4, 1, 4, 4, 2, 4</strong><br>
+                                The shopkeeper wants to buy only ONE size of glove to re-stock. Which average should be used?
+                            </p>
+
+                            <div class="flex flex-wrap gap-4 items-center justify-between bg-white p-4 rounded-xl border border-amber-300">
+                                <div class="space-y-1">
+                                    <div class="text-sm font-bold text-gray-800">Mode size = <span class="text-amber-600 font-extrabold">4</span></div>
+                                    <div class="text-sm font-bold text-gray-800">Median size = <span class="text-amber-600 font-extrabold">3</span></div>
+                                </div>
+
+                                <div class="flex items-center gap-3">
+                                    <button onclick="checkGloveAnswer('mode')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-sm transition">
+                                        Use Mode Size (4)
+                                    </button>
+                                    <button onclick="checkGloveAnswer('median')" class="bg-slate-400 hover:bg-slate-500 text-white font-bold px-4 py-2 rounded-xl text-sm transition">
+                                        Use Median Size (3)
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="glove-feedback" class="mt-2 text-xs font-bold text-amber-900 min-h-[20px]"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: Think Like a Mathematician Challenge (Book Page 53) -->
+    <div class="slide" id="slide-7">
+        <div class="max-w-4xl w-full text-center">
+            <span class="bg-purple-100 text-purple-800 text-sm font-bold px-4 py-1.5 rounded-full border border-purple-300 inline-block mb-3">
+                <i class="fa-solid fa-brain text-purple-600 mr-1"></i> Think Like a Mathematician
+            </span>
+            <h2 class="text-4xl font-extrabold text-gray-800 mb-2">The Mystery 5-Number Challenge!</h2>
+            <p class="text-gray-600 text-lg mb-6">
+                What set of 5 numbers has both a <span class="text-amber-500 font-bold">MODE of 3</span> AND a <span class="text-emerald-500 font-bold">MEDIAN of 3</span>?
+            </p>
+
+            <div class="bg-white p-8 rounded-3xl border-4 border-purple-300 shadow-2xl mb-6">
+                
+                <div class="mb-4">
+                    <p class="text-sm font-bold text-gray-600 mb-2">Number Pool (Drag these down!)</p>
+                    <div id="mystery-source" class="flex justify-center items-center gap-2 flex-wrap p-4 bg-purple-50 rounded-2xl border-2 border-purple-200 min-h-[80px]">
+                        <div data-val="1" class="w-14 h-14 bg-white border-4 border-purple-300 rounded-xl flex items-center justify-center font-bold text-2xl text-purple-900 cursor-move shadow-sm hover:scale-105 transition-transform">1</div>
+                        <div data-val="2" class="w-14 h-14 bg-white border-4 border-purple-300 rounded-xl flex items-center justify-center font-bold text-2xl text-purple-900 cursor-move shadow-sm hover:scale-105 transition-transform">2</div>
+                        <div data-val="3" class="w-14 h-14 bg-white border-4 border-purple-300 rounded-xl flex items-center justify-center font-bold text-2xl text-purple-900 cursor-move shadow-sm hover:scale-105 transition-transform">3</div>
+                        <div data-val="4" class="w-14 h-14 bg-white border-4 border-purple-300 rounded-xl flex items-center justify-center font-bold text-2xl text-purple-900 cursor-move shadow-sm hover:scale-105 transition-transform">4</div>
+                        <div data-val="5" class="w-14 h-14 bg-white border-4 border-purple-300 rounded-xl flex items-center justify-center font-bold text-2xl text-purple-900 cursor-move shadow-sm hover:scale-105 transition-transform">5</div>
+                        <div data-val="6" class="w-14 h-14 bg-white border-4 border-purple-300 rounded-xl flex items-center justify-center font-bold text-2xl text-purple-900 cursor-move shadow-sm hover:scale-105 transition-transform">6</div>
+                        <div data-val="7" class="w-14 h-14 bg-white border-4 border-purple-300 rounded-xl flex items-center justify-center font-bold text-2xl text-purple-900 cursor-move shadow-sm hover:scale-105 transition-transform">7</div>
+                        <div data-val="8" class="w-14 h-14 bg-white border-4 border-purple-300 rounded-xl flex items-center justify-center font-bold text-2xl text-purple-900 cursor-move shadow-sm hover:scale-105 transition-transform">8</div>
+                        <div data-val="9" class="w-14 h-14 bg-white border-4 border-purple-300 rounded-xl flex items-center justify-center font-bold text-2xl text-purple-900 cursor-move shadow-sm hover:scale-105 transition-transform">9</div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-sm font-bold text-purple-800 mb-2 flex justify-between px-2">
+                        <span>Drop EXACTLY 5 numbers here:</span>
+                        <span class="text-xs text-purple-600 font-normal">(Click a dropped number to remove it)</span>
+                    </p>
+                    <div id="mystery-target" class="flex justify-center items-center gap-3 p-4 bg-white border-4 border-dashed border-purple-400 rounded-2xl min-h-[100px] shadow-inner">
+                        <!-- Dropped numbers will appear here -->
+                    </div>
+                </div>
+
+                <button onclick="testMysterySet()" class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold text-xl px-8 py-3.5 rounded-full shadow-lg transition transform hover:scale-105">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Validate My 5 Numbers
+                </button>
+
+                <div id="mystery-feedback" class="mt-6 p-4 rounded-2xl font-bold text-lg hidden items-center justify-center min-h-[50px]"></div>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <button onclick="toggleMysteryHint()" class="bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold px-5 py-2.5 rounded-full text-sm transition mb-3 shadow-sm">
+                    <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> I need a hint!
+                </button>
+                <div id="mystery-hint" class="hidden bg-purple-50 p-4 rounded-2xl border border-purple-200 text-sm text-purple-900 font-medium max-w-lg transition-all">
+                    💡 <strong>Hint:</strong> Make sure 3 appears most often (at least twice) AND sits right in the middle position when ordered!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: Interactive Quiz & Look What I Can Do -->
+    <div class="slide" id="slide-8">
+        <div class="max-w-5xl w-full">
+            <div class="text-center mb-6">
+                <span class="bg-teal-100 text-teal-800 text-sm font-bold px-4 py-1.5 rounded-full border border-teal-300">
+                    <i class="fa-solid fa-flag-checkered text-teal-600 mr-1"></i> Final Assessment
+                </span>
+                <h2 class="text-4xl font-extrabold text-gray-800 mt-2">Check Your Mastery & Progress</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Mini Quiz Card -->
+                <div class="bg-white p-6 rounded-3xl border-4 border-sky-300 shadow-xl">
+                    <h3 class="text-2xl font-bold text-sky-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-question text-sky-500"></i> Mini Practice Quiz
+                    </h3>
+
+                    <div id="quiz-box">
+                        <p id="quiz-question" class="text-lg font-bold text-gray-800 mb-4">
+                            Find the MODE of: 10, 12, 10, 15, 12, 10
+                        </p>
+                        <div id="quiz-options" class="space-y-3">
+                            <button onclick="answerQuiz(10, true)" class="w-full text-left p-3 rounded-xl border-2 border-gray-200 hover:border-sky-400 bg-gray-50 font-bold transition">A) 10</button>
+                            <button onclick="answerQuiz(12, false)" class="w-full text-left p-3 rounded-xl border-2 border-gray-200 hover:border-sky-400 bg-gray-50 font-bold transition">B) 12</button>
+                            <button onclick="answerQuiz(15, false)" class="w-full text-left p-3 rounded-xl border-2 border-gray-200 hover:border-sky-400 bg-gray-50 font-bold transition">C) 15</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Look What I Can Do Checklist (From Book Page 54) -->
+                <div class="bg-white p-6 rounded-3xl border-4 border-emerald-300 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-square-check text-emerald-500"></i> Look What I Can Do!
+                        </h3>
+
+                        <div class="space-y-4">
+                            <label class="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 cursor-pointer hover:bg-emerald-100 transition">
+                                <input type="checkbox" class="w-6 h-6 text-emerald-600 rounded focus:ring-emerald-500" onchange="checkGoal(this)">
+                                <span class="font-bold text-gray-700">I can find the mode of a set of data.</span>
+                            </label>
+
+                            <label class="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 cursor-pointer hover:bg-emerald-100 transition">
+                                <input type="checkbox" class="w-6 h-6 text-emerald-600 rounded focus:ring-emerald-500" onchange="checkGoal(this)">
+                                <span class="font-bold text-gray-700">I can find the median of a set of data.</span>
+                            </label>
+
+                            <label class="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 cursor-pointer hover:bg-emerald-100 transition">
+                                <input type="checkbox" class="w-6 h-6 text-emerald-600 rounded focus:ring-emerald-500" onchange="checkGoal(this)">
+                                <span class="font-bold text-gray-700">I can compare mode and median to select the best average in context.</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <button onclick="triggerConfetti()" class="bg-gradient-to-r from-amber-400 to-emerald-500 text-white font-bold text-xl px-8 py-3 rounded-full shadow-lg hover:scale-105 transition">
+                            <i class="fa-solid fa-trophy mr-2"></i> Celebrate Our Math Win!
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <button class="nav-btn prev-btn" onclick="changeSlide(-1)">
+        <i class="fa-solid fa-arrow-left"></i> Previous
+    </button>
+    <button class="nav-btn next-btn" onclick="changeSlide(1)">
+        Next <i class="fa-solid fa-arrow-right"></i>
+    </button>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 8;
+
+        function updateSlide() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            const activeSlide = document.getElementById(`slide-${currentSlide}`);
+            if (activeSlide) activeSlide.classList.add('active');
+
+            // Update Progress Bar
+            const progressPercent = (currentSlide / totalSlides) * 100;
+            document.getElementById('progress').style.width = `${progressPercent}%`;
+
+            // Control Navigation Buttons Visibility
+            document.querySelector('.prev-btn').style.display = currentSlide === 1 ? 'none' : 'flex';
+            document.querySelector('.next-btn').style.display = currentSlide === totalSlides ? 'none' : 'flex';
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 1) currentSlide = 1;
+            if (currentSlide > totalSlides) currentSlide = totalSlides;
+            updateSlide();
+        }
+
+        function showMotivationOverlay() {
+            const overlay = document.getElementById('motivation-overlay');
+            const card = document.getElementById('motivation-card');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            
+            // Trigger animation
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0');
+                overlay.classList.add('opacity-100');
+                card.classList.remove('scale-50');
+                card.classList.add('scale-100');
+            }, 10);
+            
+            triggerConfetti();
+        }
+
+        function proceedToPractice() {
+            const overlay = document.getElementById('motivation-overlay');
+            const card = document.getElementById('motivation-card');
+            
+            overlay.classList.remove('opacity-100');
+            overlay.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-50');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+                changeSlide(1); // Proceed to the next slide (Slide 6)
+            }, 300);
+        }
+
+        function loadSavedLogos() {
+            ['left', 'right'].forEach(side => {
+                const savedLogo = localStorage.getItem(`savedLogo_${side}`);
+                if (savedLogo) {
+                    const imgElem = document.getElementById(`logo-${side}-img`);
+                    const defaultElem = document.getElementById(`logo-${side}-default`);
+                    imgElem.src = savedLogo;
+                    imgElem.classList.remove('hidden');
+                    if (defaultElem) defaultElem.classList.add('hidden');
+                }
+            });
+        }
+
+        function handleLogoUpload(event, side) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgElem = document.getElementById(`logo-${side}-img`);
+                    const defaultElem = document.getElementById(`logo-${side}-default`);
+                    imgElem.src = e.target.result;
+                    imgElem.classList.remove('hidden');
+                    if (defaultElem) defaultElem.classList.add('hidden');
+                    showToast("Logo updated successfully!");
+                    
+                    try {
+                        localStorage.setItem(`savedLogo_${side}`, e.target.result);
+                    } catch (err) {
+                        console.warn("Could not save logo to localStorage (file might be too large).");
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+
+        function checkPencil(num) {
+            const feedback = document.getElementById('pencil-feedback');
+            if (num === 3) {
+                feedback.innerHTML = `<span class="text-emerald-600">🎉 Correct! Pencil #3 is right in the middle!</span>`;
+                triggerConfetti();
+            } else {
+                feedback.innerHTML = `<span class="text-rose-500">Not quite! Count from both ends to find the middle pencil.</span>`;
+            }
+        }
+
+        let sortedArray = [];
+        const targetSorted = [1, 3, 4, 5, 7, 8, 9];
+
+        function pickSortNum(val, btn) {
+            btn.style.display = 'none';
+            sortedArray.push(val);
+            const pool = document.getElementById('sorted-pool');
+            const badge = document.createElement('span');
+            badge.className = 'num-block bg-sky-500 animate-bounce';
+            badge.innerText = val;
+            pool.appendChild(badge);
+
+            const feedback = document.getElementById('sort-feedback');
+            if (sortedArray.length === targetSorted.length) {
+                const isCorrect = JSON.stringify(sortedArray) === JSON.stringify(targetSorted);
+                if (isCorrect) {
+                    feedback.innerHTML = `<span class="text-emerald-600">⭐ Outstanding! You sorted them perfectly!</span>`;
+                    triggerConfetti();
+                } else {
+                    feedback.innerHTML = `<span class="text-rose-500">Oops! The order isn't correct. Click Reset to try again!</span>`;
+                }
+            }
+        }
+
+        function resetSortGame() {
+            sortedArray = [];
+            document.getElementById('sorted-pool').innerHTML = '';
+            document.querySelectorAll('#unsorted-pool .num-block').forEach(b => b.style.display = 'inline-flex');
+            document.getElementById('sort-feedback').innerHTML = '';
+        }
+
+        const initialHeights = [133, 137, 134, 131, 132];
+        let orderedHeights = [131, 132, 133, 134, 137];
+        let medianStep = 1;
+
+        
+        // --- Banana Interactive Logic ---
+        let bananaCounts = { 4: 0, 5: 0, 6: 0, 7: 0 };
+        let totalBananasClicked = 0;
+
+        function clickBanana(btn, num) {
+            // Visual feedback for clicked button
+            btn.classList.remove('bg-amber-300', 'hover:bg-amber-400', 'hover:scale-110', 'cursor-pointer');
+            btn.classList.add('bg-gray-200', 'text-gray-400', 'scale-95', 'opacity-50');
+            btn.disabled = true;
+
+            // Update counts
+            bananaCounts[num]++;
+            totalBananasClicked++;
+            
+            const countDisplay = document.getElementById(`count-${num}`);
+            countDisplay.innerText = `${bananaCounts[num]} times`;
+            
+            // Highlight the box briefly
+            const box = document.getElementById(`box-${num}`);
+            box.classList.add('border-amber-400', 'bg-amber-50');
+            setTimeout(() => {
+                if(totalBananasClicked < 12) {
+                    box.classList.remove('border-amber-400', 'bg-amber-50');
+                }
+            }, 300);
+
+            // Check if all clicked
+            if (totalBananasClicked === 12) {
+                // Change 5's box to winner styling
+                const winnerBox = document.getElementById('box-5');
+                winnerBox.classList.remove('bg-slate-100', 'border-slate-300');
+                winnerBox.classList.add('bg-amber-100', 'border-amber-400', 'shadow-md');
+                winnerBox.querySelector('span').classList.replace('text-slate-700', 'text-amber-900');
+                winnerBox.querySelector('div').classList.replace('text-sky-600', 'text-amber-600');
+                
+                document.getElementById('winner-badge').classList.remove('hidden');
+                document.getElementById('banana-final-banner').classList.remove('hidden');
+                triggerConfetti();
+            }
+        }
+
+        // --- Median Drag and Drop Logic ---
+        let sortableInstance;
+        let mysterySourceSortable;
+        let mysteryTargetSortable;
+        
+        function initDragAndDrop() {
+            const list = document.getElementById('q4-sortable-list');
+            if (list && !sortableInstance) {
+                sortableInstance = new Sortable(list, {
+                    animation: 150,
+                    ghostClass: 'opacity-50',
+                    onEnd: function (evt) {
+                        checkQ4SortOrder();
+                    },
+                });
+            }
+
+            const mSource = document.getElementById('mystery-source');
+            const mTarget = document.getElementById('mystery-target');
+
+            // Source list that clones items
+            if (mSource && !mysterySourceSortable) {
+                mysterySourceSortable = new Sortable(mSource, {
+                    group: {
+                        name: 'mystery',
+                        pull: 'clone', 
+                        put: false // Don't let items drop back into the source
+                    },
+                    animation: 150,
+                    sort: false
+                });
+            }
+
+            // Target list that accepts exactly 5 items
+            if (mTarget && !mysteryTargetSortable) {
+                mysteryTargetSortable = new Sortable(mTarget, {
+                    group: 'mystery',
+                    animation: 150,
+                    onAdd: function (evt) {
+                        if (mTarget.children.length > 5) {
+                            evt.item.parentNode.removeChild(evt.item);
+                            showToast("You can only pick 5 numbers!");
+                        } else {
+                            // Add click to remove feature
+                            evt.item.style.cursor = 'pointer';
+                            evt.item.title = "Click to remove";
+                            evt.item.onclick = function() {
+                                this.remove();
+                            };
+                        }
+                    }
+                });
+            }
+        }
+
+        function checkQ4SortOrder() {
+            const items = document.querySelectorAll('#q4-sortable-list > div');
+            const currentOrder = Array.from(items).map(item => parseInt(item.getAttribute('data-val')));
+            const correctOrder = [1, 3, 5, 7, 9];
+            const feedback = document.getElementById('q4-sort-feedback');
+            const interactionArea = document.getElementById('q4-interaction-area');
+
+            if (JSON.stringify(currentOrder) === JSON.stringify(correctOrder)) {
+                feedback.innerHTML = `<span class="text-emerald-600">✅ Great sorting! Now find the middle.</span>`;
+                interactionArea.classList.remove('opacity-50', 'pointer-events-none');
+                
+                // Disable dragging once correct
+                sortableInstance.options.disabled = true;
+                items.forEach(item => {
+                    item.classList.remove('cursor-move', 'hover:bg-emerald-50');
+                    item.classList.add('bg-emerald-50', 'border-emerald-500');
+                });
+            } else {
+                feedback.innerHTML = `<span class="text-amber-600">Keep trying! Order from smallest to greatest.</span>`;
+                interactionArea.classList.add('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        function initMedianTool() {
+            const container = document.getElementById('median-numbers-container');
+            container.innerHTML = '';
+            orderedHeights.forEach((h, idx) => {
+                const block = document.createElement('div');
+                block.id = `med-block-${idx}`;
+                block.className = 'num-block bg-emerald-500 border-2 border-emerald-600 text-lg px-3 w-auto min-w-[50px]';
+                block.innerText = `${h} cm`;
+                container.appendChild(block);
+            });
+            document.getElementById('median-step-desc').innerText = "Step 1: Write the heights in order: 131, 132, 133, 134, 137";
+            document.getElementById('median-result-box').classList.add('hidden');
+            document.getElementById('median-next-step-btn').style.display = 'inline-block';
+            medianStep = 1;
+        }
+
+        function nextMedianStep() {
+            if (medianStep === 1) {
+                // Cross out outer pair
+                document.getElementById('med-block-0').classList.add('crossed-out');
+                document.getElementById('med-block-4').classList.add('crossed-out');
+                document.getElementById('median-step-desc').innerText = "Step 2: Cross out the smallest (131) and greatest (137) heights.";
+                medianStep = 2;
+            } else if (medianStep === 2) {
+                // Cross out inner pair
+                document.getElementById('med-block-1').classList.add('crossed-out');
+                document.getElementById('med-block-3').classList.add('crossed-out');
+                document.getElementById('med-block-2').classList.add('median-highlight');
+                document.getElementById('median-step-desc').innerText = "Step 3: Cross out the next pair (132 and 134). The remaining middle number is the Median!";
+                document.getElementById('median-result-box').classList.remove('hidden');
+                document.getElementById('median-next-step-btn').style.display = 'none';
+                triggerConfetti();
+            }
+        }
+
+        function resetMedianTool() {
+            initMedianTool();
+        }
+
+        function revealSeedAnswer() {
+            document.getElementById('seed-answer').classList.remove('hidden');
+        }
+
+        function showMovieMotivation() {
+            document.getElementById('movie-answer').classList.remove('hidden');
+        }
+
+        function checkQ1a() {
+            const val = document.getElementById('q1a-input').value;
+            if (val == 1) { showToast("✅ Correct! 1 appears 3 times!"); triggerConfetti(); }
+            else { showToast("❌ Try again! Which number appears most?"); }
+        }
+
+        function checkQ1b() {
+            const val = document.getElementById('q1b-input').value;
+            if (val == 29) { showToast("✅ Correct! 29 is the mode!"); triggerConfetti(); }
+            else { showToast("❌ Look closely at 29!"); }
+        }
+
+        function checkQ4a() {
+            const val = document.getElementById('q4a-input').value;
+            if (val == 5) { showToast("✅ Perfect! 5 is right in the middle!"); triggerConfetti(); }
+            else { showToast("❌ Make sure to order: 1, 3, 5, 7, 9"); }
+        }
+
+        function checkGloveAnswer(type) {
+            const fb = document.getElementById('glove-feedback');
+            if (type === 'mode') {
+                fb.innerHTML = `<span class="text-emerald-600 font-bold">🎉 Correct! The shopkeeper should buy Size 4 (the MODE) because it is the most popular size requested!</span>`;
+                triggerConfetti();
+            } else {
+                fb.innerHTML = `<span class="text-rose-600 font-bold">Think again! If you buy the median size (3), you won't satisfy the majority of customers who want size 4!</span>`;
+            }
+        }
+
+        function toggleMysteryHint() {
+            const hint = document.getElementById('mystery-hint');
+            hint.classList.toggle('hidden');
+        }
+
+        function testMysterySet() {
+            const targetContainer = document.getElementById('mystery-target');
+            const items = targetContainer.querySelectorAll('div[data-val]');
+            
+            const fb = document.getElementById('mystery-feedback');
+            fb.classList.remove('hidden');
+
+            if (items.length !== 5) {
+                fb.className = "mt-6 p-4 rounded-2xl font-bold text-lg bg-amber-100 text-amber-800 border-2 border-amber-400 flex items-center justify-center";
+                fb.innerHTML = `⚠️ Please drag exactly 5 numbers into the box! (You currently have ${items.length})`;
+                return;
+            }
+
+            // Extract values from dropped elements
+            const nums = Array.from(items).map(item => parseInt(item.getAttribute('data-val')));
+            
+            // Calculate Mode & Median
+            const sorted = [...nums].sort((a,b) => a - b);
+            const median = sorted[2];
+
+            // Count frequencies
+            const freq = {};
+            nums.forEach(n => freq[n] = (freq[n] || 0) + 1);
+            let mode = null, maxCount = 0;
+            for (let k in freq) {
+                if (freq[k] > maxCount) {
+                    maxCount = freq[k];
+                    mode = parseInt(k);
+                }
+            }
+
+            if (mode === 3 && median === 3) {
+                fb.className = "mt-6 p-4 rounded-2xl font-bold text-lg bg-emerald-100 text-emerald-800 border-2 border-emerald-400 flex items-center justify-center";
+                fb.innerHTML = `🌟 Success! Mode = 3 and Median = 3! Excellent mathematical thinking!`;
+                triggerConfetti();
+            } else {
+                fb.className = "mt-6 p-4 rounded-2xl font-bold text-lg bg-rose-100 text-rose-800 border-2 border-rose-400 flex items-center justify-center";
+                fb.innerHTML = `Not quite! Your set has Mode = ${mode} and Median = ${median}. Try again!`;
+            }
+        }
+
+        function answerQuiz(val, isCorrect) {
+            if (isCorrect) {
+                showToast("🎉 Brilliant! 10 appears 3 times!");
+                triggerConfetti();
+            } else {
+                showToast("❌ Not quite. 10 is repeated the most!");
+            }
+        }
+
+        function checkGoal(checkbox) {
+            if (checkbox.checked) {
+                showToast("⭐ Goal accomplished!");
+            }
+        }
+
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const pieces = [];
+            const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6'];
+
+            for (let i = 0; i < 80; i++) {
+                pieces.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 10 + 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speed: Math.random() * 5 + 2,
+                    angle: Math.random() * 6.28
+                });
+            }
+
+            let animationFrame;
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                pieces.forEach(p => {
+                    p.y += p.speed;
+                    p.angle += 0.05;
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.angle);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                    ctx.restore();
+                });
+
+                if (pieces.some(p => p.y < canvas.height)) {
+                    animationFrame = requestAnimationFrame(render);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+            render();
+        }
+
+        // Initialize view on load
+        window.onload = function() {
+            loadSavedLogos();
+            updateSlide();
+            initMedianTool();
+            initDragAndDrop(); // Initialize SortableJS
+        };
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+        });
+    </script>
+</body>
+</html>
